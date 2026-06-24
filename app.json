@@ -2,7 +2,7 @@
   "expo": {
     "name": "My Blossom",
     "slug": "my-blossom",
-    "owner": "cozycosmo",
+    "owner": "my-blossom",
     "version": "1.0.0",
     "orientation": "portrait",
     "scheme": "myblossom",
@@ -40,7 +40,7 @@
       "supabaseAnonKey": "",
       "router": {},
       "eas": {
-        "projectId": "b300747b-22e7-421c-8dd8-ca73bb14765e"
+        "projectId": "29f8efea-b9b2-4a64-9476-6a795bbbd07e"
       }
     }
   }
