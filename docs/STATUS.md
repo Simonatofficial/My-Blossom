@@ -10,7 +10,8 @@
 The **merged spine** is in and now carries a real **Productivity vertical**: 7 widgets, the gamification core, and a working shell (module switch · page tabs · FAB add-gallery). Still mostly engine + first-module by felt-product measure (**~12–18%**), but the pattern is now proven across 7 diverse widgets, so each remaining Blossom widget is a clone-the-template job. Track felt-product % separately from engine %.
 
 ## Now (in progress)
-- **First standalone APK (gets Simon off the laptop) + on-device pass.** EAS `preview` build running under the **`my-blossom`** account (build `a8178d13`). When it lands: install the APK on the phone (no Metro), confirm both seed modules render → page tabs switch → FAB adds a Tool → Habit tier logs a streak → Skill +XP levels up → **Supabase `objects` table fills** as Tools are added (anon sign-in + sync on launch). Then: add `expo-updates` + `eas update` for OTA, and (later) a production AAB + Play submit.
+- **First standalone APK SHIPPED ✅ — on-device pass next.** EAS `preview` build `a8178d13` (account **`my-blossom`**) FINISHED → APK: `expo.dev/artifacts/eas/fSUO651pCZ6nWENydy1yxWVUxkWPpeJVretv81AgzcA.apk`. Simon installs it (off the laptop, standalone, Supabase-synced). Tap-through to confirm: both seed modules render → page tabs switch → FAB adds a Tool → Habit tier logs a streak → Skill +XP levels up → **Supabase `objects` table fills** as Tools are added.
+- **Next publish steps:** add `expo-updates` + `eas update` (OTA — push JS updates without rebuilding), then a `production` AAB + `eas submit` to the Play Store.
 - **Pending Simon's hand:** the GitHub force-push (`Simonatofficial/My-Blossom`) is blocked for the agent by the safety guard; needs a `Bash(git push:*)` allow-rule in the *parent* `My Blossom/.claude/settings.local.json`, or Simon runs `git push -u origin main --force` once. Not blocking the build (EAS uploads local files).
 
 ## Done this session (newest first)
