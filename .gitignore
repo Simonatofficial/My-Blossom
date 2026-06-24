@@ -22,3 +22,6 @@ ios/
 *.log
 npm-debug.*
 yarn-error.*
+
+# personal Claude Code settings (keep shared ones in .claude/settings.json)
+.claude/settings.local.json
