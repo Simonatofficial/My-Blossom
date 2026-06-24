@@ -7,7 +7,9 @@ import { useToast } from '@/ui/ToastProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Sky } from '@/ui/Sky';
 import { AddWidgetSheet } from '@/ui/AddWidgetSheet';
+import { SettingsSheet } from '@/ui/SettingsSheet';
 import { WidgetHost } from '@/widgets/WidgetHost';
+import { getWidget } from '@/widgets/registry';
 import { addWidgetToPage } from '@/modules/engine';
 import type { ModuleDoc, PageDoc, WidgetDoc } from '@/modules/types';
 
@@ -31,6 +33,7 @@ export default function Home() {
   const [open, setOpen] = useState<WidgetDoc | null>(null);
   const [adding, setAdding] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const mod = mods[modIdx] ?? null;
 
@@ -127,6 +130,11 @@ export default function Home() {
         <View style={{ flex: 1 }}>
           <Sky />
           <View style={[styles.modalBar, { paddingTop: insets.top + 8 }]}>
+            {open && (getWidget(open.type)?.settings?.length ?? 0) > 0 ? (
+              <Pressable onPress={() => setSettingsOpen(true)} style={[styles.close, { backgroundColor: withAlpha(theme.surface, 0.8) }]}>
+                <Text style={{ color: theme.text }}>⚙ Settings</Text>
+              </Pressable>
+            ) : <View />}
             <Pressable onPress={() => setOpen(null)} style={[styles.close, { backgroundColor: withAlpha(theme.surface, 0.8) }]}>
               <Text style={{ color: theme.text }}>Done</Text>
             </Pressable>
@@ -134,6 +142,9 @@ export default function Home() {
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
             {open ? <WidgetHost id={open.id} type={open.type} store={store} mode="full" ctx={ctx} aspect={aspect} /> : null}
           </ScrollView>
+          {open ? (
+            <SettingsSheet visible={settingsOpen} store={store} type={open.type} id={open.id} onClose={() => setSettingsOpen(false)} />
+          ) : null}
         </View>
       </Modal>
     </View>
@@ -183,6 +194,6 @@ const styles = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
   sheet: { marginHorizontal: 16, borderRadius: 16, paddingVertical: 8 },
   sheetRow: { paddingHorizontal: 18, paddingVertical: 12 },
-  modalBar: { flexDirection: 'row', justifyContent: 'flex-end', paddingHorizontal: 16, paddingBottom: 8 },
+  modalBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 8 },
   close: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
 });
