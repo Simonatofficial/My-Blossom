@@ -100,4 +100,13 @@ export const habitLogic: WidgetLogic<HabitState, HabitAction> = {
     const streak = computeStreak(state.log, today);
     return { ...state, streak, best: Math.max(state.best, streak), lastRolled: today };
   },
+  // A habit builds DISCIPLINE. Award once per newly-logged day (re-tapping the
+  // same day is idempotent → no growth), scaled by tier. (The Blossom: tiers
+  // earn proportionally; MVV still counts.)
+  grows(prev, next, action) {
+    if (action.type !== 'logTier') return [];
+    if (prev.log[action.date]) return []; // day already had a tier → no double-award
+    const amount = action.tier === 'stretch' ? 15 : action.tier === 'standard' ? 10 : 6;
+    return [{ attribute: 'discipline', amount }];
+  },
 };

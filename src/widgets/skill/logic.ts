@@ -42,4 +42,10 @@ export const skillLogic: WidgetLogic<SkillState, SkillAction> = {
         return state;
     }
   },
+  // Practising a skill is LEARNING — the granted XP feeds the aspect 1:1, tagged
+  // with the skill's name so the flower can later show skill stars.
+  grows(_prev, next, action) {
+    if (action.type !== 'grant' || action.amount <= 0) return [];
+    return [{ attribute: 'learning', amount: action.amount, skill: next.name }];
+  },
 };

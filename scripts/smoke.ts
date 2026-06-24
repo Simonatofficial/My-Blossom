@@ -115,6 +115,50 @@ const ok = (n: string) => { console.log('  ✓', n); passed++; };
   ok('skill: grant XP → level up');
 }
 
+// --- the growth loop: Tool completions emit contributions, the flower grows ---
+{
+  // habit: a newly-logged day earns discipline; re-tapping the same day earns nothing.
+  const h0 = habitLogic.defaults();
+  const day = todayStr();
+  const act = { type: 'logTier', date: day, tier: 'standard' } as const;
+  const h1 = habitLogic.reduce(h0, act);
+  assert.deepEqual(habitLogic.grows!(h0, h1, act), [{ attribute: 'discipline', amount: 10 }]);
+  assert.deepEqual(habitLogic.grows!(h1, habitLogic.reduce(h1, act), act), []); // idempotent
+  ok('grows/habit: new day → discipline, re-tap → nothing');
+
+  // quest: completing a step earns focus; un/re-checking never farms it.
+  let q = questLogic.defaults();
+  q = questLogic.reduce(q, { type: 'addStep', text: 'a' });
+  const toggle = { type: 'toggleStep', id: q.steps[0].id } as const;
+  const q2 = questLogic.reduce(q, toggle);
+  assert.deepEqual(questLogic.grows!(q, q2, toggle), [{ attribute: 'focus', amount: 10 }]);
+  assert.deepEqual(questLogic.grows!(q2, questLogic.reduce(q2, toggle), toggle), []); // uncheck → none
+  ok('grows/quest: step done → focus, uncheck → nothing');
+
+  // goal: a milestone reached earns wisdom.
+  let g = goalLogic.defaults();
+  g = goalLogic.reduce(g, { type: 'addMilestone', name: 'm' });
+  const mt = { type: 'toggleMilestone', id: g.milestones[0].id } as const;
+  assert.deepEqual(goalLogic.grows!(g, goalLogic.reduce(g, mt), mt), [{ attribute: 'wisdom', amount: 20 }]);
+  ok('grows/goal: milestone → wisdom');
+
+  // skill: granted XP feeds learning 1:1, tagged with the skill name.
+  const sk = skillLogic.defaults();
+  const grant = { type: 'grant', amount: 25 } as const;
+  assert.deepEqual(skillLogic.grows!(sk, skillLogic.reduce(sk, grant), grant), [{ attribute: 'learning', amount: 25, skill: 'Skill' }]);
+  ok('grows/skill: grant → learning (1:1)');
+
+  // wiring: feed the Mental flower from those contributions → its level rises.
+  const mentalAttrs = ['focus', 'learning', 'creativity', 'discipline', 'wisdom'];
+  let gr = emptyGrowth();
+  for (let i = 0; i < 30; i++) {
+    gr = applyGrowth(gr, { aspect: 'mental', attribute: 'discipline', amount: 10 });
+    gr = applyGrowth(gr, { aspect: 'mental', attribute: 'focus', amount: 10 });
+  }
+  assert.ok(aspectLevel(gr, 'mental', mentalAttrs) >= 2, 'mental aspect grew from contributions');
+  ok('grows→flower: contributions raise the aspect flower level');
+}
+
 // --- store + sync primitives ---
 async function storeAndSync() {
   const st = new MemoryStore();

@@ -55,4 +55,11 @@ export const goalLogic: WidgetLogic<GoalState, GoalAction> = {
         return state;
     }
   },
+  // Reaching a milestone is hard-won WISDOM — 20 XP per newly-completed milestone.
+  grows(prev, next) {
+    const before = prev.milestones.filter((m) => m.done).length;
+    const after = next.milestones.filter((m) => m.done).length;
+    if (after <= before) return [];
+    return [{ attribute: 'wisdom', amount: (after - before) * 20 }];
+  },
 };

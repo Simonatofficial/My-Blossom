@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '@/ui/StoreProvider';
+import { useGrowth } from '@/ui/GrowthProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Sky } from '@/ui/Sky';
 import { AddWidgetSheet } from '@/ui/AddWidgetSheet';
@@ -17,6 +18,7 @@ import type { ModuleDoc, PageDoc, WidgetDoc } from '@/modules/types';
  */
 export default function Home() {
   const store = useStore();
+  const { growth, grow } = useGrowth();
   const { theme, setThemeId, withAlpha } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -59,7 +61,10 @@ export default function Home() {
     if (mod) void loadPage(mod);
   }, [mod, loadPage]);
 
-  const ctx = { navigate: () => {}, toast: () => {} };
+  // The world-handle every Tool gets. `grow` feeds the Blossom loop; `growth`
+  // is the live ledger the AspectFlower reads. Both flow from GrowthProvider.
+  const ctx = { navigate: () => {}, toast: () => {}, grow, growth };
+  const aspect = mod?.feedsAspect;
 
   const onAdd = async (type: string) => {
     if (!page) return;
@@ -82,7 +87,7 @@ export default function Home() {
         <Text style={[styles.pageName, { color: theme.text }]}>{page?.name ?? ''}</Text>
         <View>
           {nodes.map((n) => (
-            <WidgetHost key={n.id} id={n.id} type={n.type} store={store} mode="card" ctx={ctx} onOpen={() => setOpen(n)} />
+            <WidgetHost key={n.id} id={n.id} type={n.type} store={store} mode="card" ctx={ctx} aspect={aspect} onOpen={() => setOpen(n)} />
           ))}
           {nodes.length === 0 ? <Text style={{ color: theme.textMuted }}>Empty page — tap ＋ to add a Tool.</Text> : null}
         </View>
@@ -125,7 +130,7 @@ export default function Home() {
             </Pressable>
           </View>
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
-            {open ? <WidgetHost id={open.id} type={open.type} store={store} mode="full" ctx={ctx} /> : null}
+            {open ? <WidgetHost id={open.id} type={open.type} store={store} mode="full" ctx={ctx} aspect={aspect} /> : null}
           </ScrollView>
         </View>
       </Modal>

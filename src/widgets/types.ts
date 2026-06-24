@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from 'react';
 import type { Obj, Store } from '../core/store/types';
+import type { GrowthState } from '../core/logic/growth';
 
 /**
  * The Tool (a.k.a. Widget) plugin contract — v1.0.0.
@@ -42,12 +43,27 @@ export interface SettingsField {
 }
 export type SettingsSchema = SettingsField[];
 
+/** What a Tool contributes to the Blossom growth loop on a state change. The
+ *  Tool names the *attribute* + *amount* (semantic to its purpose); the host
+ *  supplies the *aspect* from the module it lives in (Productivity → mental). So
+ *  a Tool never hard-codes the aspect taxonomy — it just says "this earned focus".
+ *  (docs/06, MERGE-SPEC §4.4 — the Blossom loop.) */
+export interface GrowthContribution {
+  attribute: string;
+  amount: number;
+  skill?: string;
+}
+
 /** A Tool's pure brain — state shape + how actions change it. No view, no RN. */
 export interface WidgetLogic<S, A> {
   defaults(): S;
   reduce(state: S, action: A): S;
   /** Optional: called once when the calendar day rolls over (streaks, resets). */
   onDayRolled?(state: S, today: string): S;
+  /** Optional, PURE: given the state before/after an action, what growth did it
+   *  earn? Compares prev→next so it never double-awards on idempotent re-dispatch.
+   *  Returns [] for actions that aren't completions. Node-testable. */
+  grows?(prev: S, next: S, action: A): GrowthContribution[];
 }
 
 /** Context the host hands every view. Tools touch the world ONLY through this —
@@ -62,6 +78,9 @@ export interface WidgetContext {
   readLink?: (outputKey: string, date?: string) => number | null;
   /** Award aspect-XP to the Blossom growth engine (docs/06). Tagged by attribute/skill. */
   grow?: (aspect: string, attribute: string, amount: number, skill?: string) => void;
+  /** Read side of growth — the live earned-XP ledger, for Tools that VISUALISE it
+   *  (the AspectFlower). Snapshot; updates as activity grows it. */
+  growth?: GrowthState;
 }
 
 /** Props every Tool view receives. CardView is the at-a-glance face; FullView

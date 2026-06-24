@@ -29,6 +29,7 @@ export const PRODUCTIVITY_PRESET: ModuleDef = {
       icon: 'trending-up',
       layout: 'stream',
       widgets: [
+        { type: 'flower', config: { aspect: 'mental' } },
         { type: 'goal', config: {} },
         { type: 'skill', config: {} },
       ],

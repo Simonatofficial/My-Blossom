@@ -17,6 +17,7 @@ import { questWidget } from './quest';
 import { habitWidget } from './habit';
 import { goalWidget } from './goal';
 import { skillWidget } from './skill';
+import { flowerWidget } from './flower';
 
 const registry = new Map<string, Widget<any, any>>();
 
@@ -58,7 +59,7 @@ const launch: Widget<any, any>[] = [
   // Notes & Writing
   notesWidget,
   // Growth & Rewards
-  skillWidget,
+  flowerWidget, skillWidget,
   // Data & Charts
   counterWidget,
 ];

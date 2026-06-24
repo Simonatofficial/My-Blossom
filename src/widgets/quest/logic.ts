@@ -67,4 +67,12 @@ export const questLogic: WidgetLogic<QuestState, QuestAction> = {
         return state;
     }
   },
+  // Completing quest steps earns FOCUS — 10 XP per newly-finished step. Diffing
+  // prev→next means un-checking then re-checking never farms growth.
+  grows(prev, next) {
+    const before = prev.steps.filter((s) => s.done).length;
+    const after = next.steps.filter((s) => s.done).length;
+    if (after <= before) return [];
+    return [{ attribute: 'focus', amount: (after - before) * 10 }];
+  },
 };

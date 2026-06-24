@@ -18,6 +18,7 @@ export function WidgetHost({
   store,
   mode = 'card',
   ctx,
+  aspect,
   onOpen,
 }: {
   id: string;
@@ -25,6 +26,9 @@ export function WidgetHost({
   store: Store;
   mode?: 'card' | 'full';
   ctx: Omit<WidgetContext, 'store'>;
+  /** The aspect this Tool's module feeds — supplied to growth events (the Tool
+   *  only names the attribute; the module decides which flower it grows). */
+  aspect?: string;
   onOpen?: () => void;
 }) {
   const { theme, withAlpha } = useTheme();
@@ -55,10 +59,16 @@ export function WidgetHost({
       setState((prev: unknown) => {
         const next = plugin.logic.reduce(prev, action as never);
         void store.put({ id, kind: type, data: next, updatedAt: Date.now() });
+        // Feed the Blossom growth loop: the pure detector says what attribute(s)
+        // this change earned; the host supplies the module's aspect and grows it.
+        const contribs = plugin.logic.grows?.(prev, next, action as never) ?? [];
+        if (aspect && fullCtx.grow) {
+          for (const c of contribs) fullCtx.grow(aspect, c.attribute, c.amount, c.skill);
+        }
         return next;
       });
     },
-    [plugin, id, type, store],
+    [plugin, id, type, store, aspect, fullCtx],
   );
 
   if (!plugin) {
