@@ -34,6 +34,9 @@ export interface HabitState {
   streak: number;
   best: number;
   lastRolled: string | null;
+  /** Which aspect attribute this habit grows (default discipline; a preset/
+   *  settings can retarget it, e.g. an Activity habit → strength). */
+  growthAttribute: string;
 }
 export type HabitAction =
   | { type: 'logTier'; date: string; tier: TierKey }
@@ -76,6 +79,7 @@ export const habitLogic: WidgetLogic<HabitState, HabitAction> = {
     tiers: { mvv: '', standard: '', stretch: '' },
     weeklyTarget: 7, difficulty: 'bloom',
     log: {}, streak: 0, best: 0, lastRolled: null,
+    growthAttribute: 'discipline',
   }),
   reduce(state, action) {
     switch (action.type) {
@@ -107,6 +111,6 @@ export const habitLogic: WidgetLogic<HabitState, HabitAction> = {
     if (action.type !== 'logTier') return [];
     if (prev.log[action.date]) return []; // day already had a tier → no double-award
     const amount = action.tier === 'stretch' ? 15 : action.tier === 'standard' ? 10 : 6;
-    return [{ attribute: 'discipline', amount }];
+    return [{ attribute: next.growthAttribute || 'discipline', amount }];
   },
 };

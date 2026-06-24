@@ -22,6 +22,8 @@ export interface QuestState {
   dueDate?: string;
   xp?: number; // explicit override; otherwise suggested = steps * 10
   steps: Step[];
+  /** Aspect attribute completing steps grows (default focus; retargetable). */
+  growthAttribute: string;
 }
 export type QuestAction =
   | { type: 'addStep'; text: string }
@@ -42,7 +44,7 @@ export function suggestedXp(s: QuestState): number {
 
 /** Pure brain for the Quest tool — a step-based mission. Standalone. */
 export const questLogic: WidgetLogic<QuestState, QuestAction> = {
-  defaults: () => ({ difficulty: 'sprout', steps: [] }),
+  defaults: () => ({ difficulty: 'sprout', steps: [], growthAttribute: 'focus' }),
   reduce(state, action) {
     switch (action.type) {
       case 'addStep':
@@ -73,6 +75,6 @@ export const questLogic: WidgetLogic<QuestState, QuestAction> = {
     const before = prev.steps.filter((s) => s.done).length;
     const after = next.steps.filter((s) => s.done).length;
     if (after <= before) return [];
-    return [{ attribute: 'focus', amount: (after - before) * 10 }];
+    return [{ attribute: next.growthAttribute || 'focus', amount: (after - before) * 10 }];
   },
 };

@@ -16,6 +16,8 @@ export interface SkillEntry {
 export interface SkillState extends XpState {
   name: string;
   log: SkillEntry[];
+  /** Aspect attribute granted XP grows (default learning; retargetable). */
+  growthAttribute: string;
 }
 export type SkillAction =
   | { type: 'grant'; amount: number }
@@ -24,7 +26,7 @@ export type SkillAction =
 export { xpToNext, levelProgress };
 
 export const skillLogic: WidgetLogic<SkillState, SkillAction> = {
-  defaults: () => ({ name: 'Skill', level: 1, xp: 0, log: [] }),
+  defaults: () => ({ name: 'Skill', level: 1, xp: 0, log: [], growthAttribute: 'learning' }),
   reduce(state, action) {
     switch (action.type) {
       case 'grant': {
@@ -46,6 +48,6 @@ export const skillLogic: WidgetLogic<SkillState, SkillAction> = {
   // with the skill's name so the flower can later show skill stars.
   grows(_prev, next, action) {
     if (action.type !== 'grant' || action.amount <= 0) return [];
-    return [{ attribute: 'learning', amount: action.amount, skill: next.name }];
+    return [{ attribute: next.growthAttribute || 'learning', amount: action.amount, skill: next.name }];
   },
 };

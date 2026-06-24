@@ -29,11 +29,14 @@ async function buildWidget(
   };
 
   // The content object (the Tool's pure-logic defaults), keyed by the same id.
+  // A preset's `config` SEEDS the content state — so a preset can point a flower
+  // at an aspect, or set a Tool's growth attribute, without any per-Tool code.
   const plugin = getWidget(def.type);
   if (plugin) {
+    const defaults = plugin.logic.defaults() as Record<string, unknown>;
     await store.put({
       id, kind: plugin.type, moduleId,
-      data: plugin.logic.defaults(), updatedAt: Date.now(),
+      data: { ...defaults, ...(def.config ?? {}) }, updatedAt: Date.now(),
     });
   }
 

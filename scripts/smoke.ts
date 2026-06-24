@@ -157,6 +157,12 @@ const ok = (n: string) => { console.log('  ✓', n); passed++; };
   }
   assert.ok(aspectLevel(gr, 'mental', mentalAttrs) >= 2, 'mental aspect grew from contributions');
   ok('grows→flower: contributions raise the aspect flower level');
+
+  // retarget: an Activity-style habit (growthAttribute = strength) grows Physical.
+  const hb = { ...habitLogic.defaults(), growthAttribute: 'strength' };
+  const sAct = { type: 'logTier', date: '2025-01-01', tier: 'standard' } as const;
+  assert.deepEqual(habitLogic.grows!(hb, habitLogic.reduce(hb, sAct), sAct), [{ attribute: 'strength', amount: 10 }]);
+  ok('grows/retarget: config growthAttribute → grows a different aspect (Activity → Physical)');
 }
 
 // --- store + sync primitives ---

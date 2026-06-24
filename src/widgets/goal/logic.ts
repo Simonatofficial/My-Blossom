@@ -17,6 +17,8 @@ export interface Milestone {
 export interface GoalState {
   note: string;
   milestones: Milestone[];
+  /** Aspect attribute a reached milestone grows (default wisdom; retargetable). */
+  growthAttribute: string;
 }
 export type GoalAction =
   | { type: 'addMilestone'; name: string; weight?: number }
@@ -40,7 +42,7 @@ export function stageIcon(pct: number): string {
 }
 
 export const goalLogic: WidgetLogic<GoalState, GoalAction> = {
-  defaults: () => ({ note: '', milestones: [] }),
+  defaults: () => ({ note: '', milestones: [], growthAttribute: 'wisdom' }),
   reduce(state, action) {
     switch (action.type) {
       case 'addMilestone':
@@ -60,6 +62,6 @@ export const goalLogic: WidgetLogic<GoalState, GoalAction> = {
     const before = prev.milestones.filter((m) => m.done).length;
     const after = next.milestones.filter((m) => m.done).length;
     if (after <= before) return [];
-    return [{ attribute: 'wisdom', amount: (after - before) * 20 }];
+    return [{ attribute: next.growthAttribute || 'wisdom', amount: (after - before) * 20 }];
   },
 };
