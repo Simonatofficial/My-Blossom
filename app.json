@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "My Blossom",
+    "slug": "my-blossom",
+    "owner": "cozycosmo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "myblossom",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.simon.myblossom",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true
+    },
+    "ios": {
+      "bundleIdentifier": "com.simon.myblossom",
+      "buildNumber": "1",
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-notifications",
+      "expo-background-task"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "supabaseUrl": "",
+      "supabaseAnonKey": "",
+      "router": {},
+      "eas": {
+        "projectId": "b300747b-22e7-421c-8dd8-ca73bb14765e"
+      }
+    }
+  }
+}
