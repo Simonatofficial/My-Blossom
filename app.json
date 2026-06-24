@@ -29,7 +29,8 @@
       "expo-router",
       "expo-sqlite",
       "expo-notifications",
-      "expo-background-task"
+      "expo-background-task",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
