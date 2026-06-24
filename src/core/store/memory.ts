@@ -86,4 +86,22 @@ export class MemoryStore implements Store {
     const kinds = new Set(objs.map((o) => o.kind));
     kinds.forEach((k) => this.emit(k));
   }
+
+  // --- uniform sync-source shape (matches SqliteStore), used by getSyncSource ---
+
+  /** Objects (all kinds, incl. soft-deleted) changed since `since`, oldest first. */
+  async allChangedSince(since: number): Promise<Obj[]> {
+    return [...this.objs.values()]
+      .filter((o) => o.updatedAt > since)
+      .sort((a, b) => a.updatedAt - b.updatedAt);
+  }
+
+  /** Apply one remote row, LWW, preserving its clock. Returns true if it changed. */
+  async applyRemoteObj(obj: Obj): Promise<boolean> {
+    const local = this.objs.get(obj.id);
+    if (local && local.updatedAt >= obj.updatedAt) return false;
+    this.objs.set(obj.id, obj);
+    this.emit(obj.kind);
+    return true;
+  }
 }

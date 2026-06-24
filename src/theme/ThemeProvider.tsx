@@ -1,22 +1,22 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Theme } from './types';
 import { DEFAULT_THEME_ID, getThemeById, THEMES } from '@/presets/themes';
+import { getPrefs } from '@/core/store';
 
 /**
- * ThemeProvider — restores + persists the chosen theme and hands the active
- * Theme + a `withAlpha` helper to the tree. Persistence goes through the prefs
- * store (a tiny key/value) so it survives restarts. Pure React; the Sky and the
- * visual engine consume `theme` to paint the world.
+ * ThemeProvider — restores + persists the chosen theme through the sqlite-backed
+ * prefs store (survives restarts). Hands the active Theme + a `withAlpha` helper
+ * to the tree. The Sky + visual engine consume `theme` to paint the world.
  */
 interface ThemeCtx {
   theme: Theme;
   themes: Theme[];
   setThemeId: (id: string) => void;
-  /** Translucent surface colour over the world. */
   withAlpha: (hex: string, alpha: number) => string;
 }
 
 const Ctx = createContext<ThemeCtx | null>(null);
+const PREF_KEY = 'themeId';
 
 function withAlpha(hex: string, alpha: number): string {
   const h = hex.replace('#', '');
@@ -26,35 +26,23 @@ function withAlpha(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-export interface PrefsLike {
-  getString(key: string): string | null | undefined;
-  set(key: string, value: string): void;
-}
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [themeId, setThemeIdState] = useState<string>(DEFAULT_THEME_ID);
 
-export function ThemeProvider({
-  children,
-  prefs,
-}: {
-  children: React.ReactNode;
-  prefs?: PrefsLike;
-}) {
-  const [themeId, setThemeIdState] = useState<string>(
-    () => prefs?.getString('themeId') || DEFAULT_THEME_ID,
-  );
-
+  // Restore the saved theme once on mount.
   useEffect(() => {
-    const saved = prefs?.getString('themeId');
-    if (saved && saved !== themeId) setThemeIdState(saved);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let alive = true;
+    void (async () => {
+      const saved = await (await getPrefs()).getString(PREF_KEY);
+      if (alive && saved && getThemeById(saved)) setThemeIdState(saved);
+    })();
+    return () => { alive = false; };
   }, []);
 
-  const setThemeId = useCallback(
-    (id: string) => {
-      setThemeIdState(id);
-      prefs?.set('themeId', id);
-    },
-    [prefs],
-  );
+  const setThemeId = useCallback((id: string) => {
+    setThemeIdState(id);
+    void (async () => { await (await getPrefs()).setString(PREF_KEY, id); })();
+  }, []);
 
   const theme = getThemeById(themeId) ?? THEMES[0];
 

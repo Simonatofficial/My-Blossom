@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { StoreProvider } from '@/ui/StoreProvider';
+import { SyncProvider } from '@/core/sync/SyncProvider';
 
 /**
  * Root layout — the providers + nav frame. Order matters: Store + Theme wrap the
@@ -26,9 +27,11 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <StoreProvider>
-          <ThemeProvider>
-            <Frame />
-          </ThemeProvider>
+          <SyncProvider>
+            <ThemeProvider>
+              <Frame />
+            </ThemeProvider>
+          </SyncProvider>
         </StoreProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

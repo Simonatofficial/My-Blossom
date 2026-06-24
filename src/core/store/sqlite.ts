@@ -124,4 +124,33 @@ export class SqliteStore implements Store {
     if (!set || set.size === 0) return;
     void this.query(kind).then((objs) => set.forEach((cb) => cb(objs)));
   }
+
+  // --- sync support (used by getSyncSource → SyncEngine; not the widget Store) ---
+
+  /** Every object (all kinds, incl. soft-deleted) with updated_at > since, oldest first. */
+  async allChangedSince(since: number): Promise<Obj[]> {
+    const rows = await this.db.getAllAsync<Row>(
+      'SELECT * FROM objects WHERE updated_at > ? ORDER BY updated_at ASC', since,
+    );
+    return rows.map(rowToObj);
+  }
+
+  /** Apply a row pulled from the cloud, last-write-wins, PRESERVING its clock
+   *  (never re-stamps updated_at — that would desync the LWW comparison). */
+  async applyRemoteObj(obj: Obj): Promise<boolean> {
+    const existing = await this.db.getFirstAsync<{ updated_at: number }>(
+      'SELECT updated_at FROM objects WHERE id = ?', obj.id,
+    );
+    if (existing && existing.updated_at >= obj.updatedAt) return false;
+    await this.db.runAsync(
+      `INSERT INTO objects (id, kind, module_id, data, updated_at, deleted_at)
+       VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         kind=excluded.kind, module_id=excluded.module_id,
+         data=excluded.data, updated_at=excluded.updated_at, deleted_at=excluded.deleted_at`,
+      obj.id, obj.kind, obj.moduleId ?? null, JSON.stringify(obj.data), obj.updatedAt, obj.deletedAt ?? null,
+    );
+    this.emit(obj.kind);
+    return true;
+  }
 }
