@@ -10,7 +10,8 @@ import { AddWidgetSheet } from '@/ui/AddWidgetSheet';
 import { SettingsSheet } from '@/ui/SettingsSheet';
 import { WidgetHost } from '@/widgets/WidgetHost';
 import { getWidget } from '@/widgets/registry';
-import { addWidgetToPage } from '@/modules/engine';
+import { addWidgetToPage, instantiateModule } from '@/modules/engine';
+import { MODULE_PRESETS } from '@/presets/modules';
 import type { ModuleDoc, PageDoc, WidgetDoc } from '@/modules/types';
 
 /**
@@ -37,13 +38,25 @@ export default function Home() {
 
   const mod = mods[modIdx] ?? null;
 
-  // Load all modules once.
-  useEffect(() => {
-    void (async () => {
-      const ms = (await store.query<ModuleDoc>('module')).map((o) => o.data);
-      setMods(ms);
-    })();
+  // Load all modules (reused after adding one).
+  const loadMods = useCallback(async (): Promise<ModuleDoc[]> => {
+    const ms = (await store.query<ModuleDoc>('module')).map((o) => o.data);
+    setMods(ms);
+    return ms;
   }, [store]);
+
+  useEffect(() => { void loadMods(); }, [loadMods]);
+
+  // Add a whole module from a preset (so existing installs gain Activity etc.
+  // without a reinstall). Instantiates into the store, then switches to it.
+  const addModule = async (key: string) => {
+    const preset = MODULE_PRESETS.find((p) => p.key === key);
+    if (!preset) return;
+    await instantiateModule(store, preset);
+    const ms = await loadMods();
+    setSwitching(false);
+    setModIdx(Math.max(0, ms.length - 1));
+  };
 
   // Load the active module's home page + its widget nodes whenever the module changes.
   const loadPage = useCallback(
@@ -121,6 +134,13 @@ export default function Home() {
                 <Text style={{ color: i === modIdx ? theme.accent : theme.text, fontWeight: i === modIdx ? '700' : '500' }}>{m.name}</Text>
               </Pressable>
             ))}
+            <View style={[styles.sheetDivider, { backgroundColor: withAlpha(theme.textMuted, 0.2) }]} />
+            <Text style={[styles.sheetHead, { color: theme.textMuted }]}>ADD A MODULE</Text>
+            {MODULE_PRESETS.map((p) => (
+              <Pressable key={p.key} onPress={() => void addModule(p.key)} style={styles.sheetRow}>
+                <Text style={{ color: theme.text }}>＋ {p.name}</Text>
+              </Pressable>
+            ))}
           </View>
         </Pressable>
       </Modal>
@@ -194,6 +214,8 @@ const styles = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.3)' },
   sheet: { marginHorizontal: 16, borderRadius: 16, paddingVertical: 8 },
   sheetRow: { paddingHorizontal: 18, paddingVertical: 12 },
+  sheetDivider: { height: 1, marginVertical: 6, marginHorizontal: 12 },
+  sheetHead: { fontSize: 11, letterSpacing: 1, paddingHorizontal: 18, paddingTop: 4, paddingBottom: 2 },
   modalBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 8 },
   close: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
 });
