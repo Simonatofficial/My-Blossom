@@ -60,10 +60,13 @@ export function WidgetHost({
         const next = plugin.logic.reduce(prev, action as never);
         void store.put({ id, kind: type, data: next, updatedAt: Date.now() });
         // Feed the Blossom growth loop: the pure detector says what attribute(s)
-        // this change earned; the host supplies the module's aspect and grows it.
+        // this change earned; the host supplies the module's aspect and grows it,
+        // then a soft toast confirms it ("🌱 +10 Discipline").
         const contribs = plugin.logic.grows?.(prev, next, action as never) ?? [];
-        if (aspect && fullCtx.grow) {
+        if (aspect && fullCtx.grow && contribs.length) {
           for (const c of contribs) fullCtx.grow(aspect, c.attribute, c.amount, c.skill);
+          const summary = contribs.map((c) => `+${c.amount} ${cap(c.attribute)}`).join(', ');
+          fullCtx.toast?.(`🌱 ${summary}`);
         }
         return next;
       });
@@ -106,6 +109,8 @@ export function WidgetHost({
     </Pressable>
   );
 }
+
+const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const styles = StyleSheet.create({
   card: { padding: 16, marginBottom: 12 },

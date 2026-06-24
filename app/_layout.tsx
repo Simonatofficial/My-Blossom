@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { StoreProvider } from '@/ui/StoreProvider';
 import { GrowthProvider } from '@/ui/GrowthProvider';
+import { ToastProvider } from '@/ui/ToastProvider';
 import { SyncProvider } from '@/core/sync/SyncProvider';
 
 /**
@@ -31,7 +32,9 @@ export default function RootLayout() {
           <GrowthProvider>
             <SyncProvider>
               <ThemeProvider>
-                <Frame />
+                <ToastProvider>
+                  <Frame />
+                </ToastProvider>
               </ThemeProvider>
             </SyncProvider>
           </GrowthProvider>

@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStore } from '@/ui/StoreProvider';
 import { useGrowth } from '@/ui/GrowthProvider';
+import { useToast } from '@/ui/ToastProvider';
 import { useTheme } from '@/theme/ThemeProvider';
 import { Sky } from '@/ui/Sky';
 import { AddWidgetSheet } from '@/ui/AddWidgetSheet';
@@ -19,6 +20,7 @@ import type { ModuleDoc, PageDoc, WidgetDoc } from '@/modules/types';
 export default function Home() {
   const store = useStore();
   const { growth, grow } = useGrowth();
+  const { toast } = useToast();
   const { theme, setThemeId, withAlpha } = useTheme();
   const insets = useSafeAreaInsets();
 
@@ -62,8 +64,8 @@ export default function Home() {
   }, [mod, loadPage]);
 
   // The world-handle every Tool gets. `grow` feeds the Blossom loop; `growth`
-  // is the live ledger the AspectFlower reads. Both flow from GrowthProvider.
-  const ctx = { navigate: () => {}, toast: () => {}, grow, growth };
+  // is the live ledger the AspectFlower reads; `toast` is soft confirmation.
+  const ctx = { navigate: () => {}, toast, grow, growth };
   const aspect = mod?.feedsAspect;
 
   const onAdd = async (type: string) => {
